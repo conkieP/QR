@@ -54,7 +54,7 @@
         url.searchParams.append("key", secretKey);
 
         showMessage("📡 Checking database…", "grey");
-         showMessage(url,"black");
+         alert(url);
 
         fetch(url.toString())
           .then(response => response.json())
