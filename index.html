@@ -1,36 +1,86 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <title>Staff Ticket Scanner</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Staff Check-In QR Scanner</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
   <style>
-    body { font-family: sans-serif; text-align: center; padding: 0px 20px 20px 20px; }
+    body { font-family: sans-serif; text-align: center; padding: 0px 20px 20px 20px; background-color: #f0f2f5; }
     #reader { width: 100%; max-width: 400px; margin: auto; }
+    #result {
+      font-size: 24px;
+      margin-top: 30px;
+      min-height: 60px;
+      padding: 10px;
+    }
+    .green { color: green; }
+    .orange { color: orange; }
+    .red { color: red; }
+    .grey { color: #555; }
   </style>
 </head>
 <body>
   <h2>Staff Check-In Scanner</h2>
   <div id="reader"></div>
-  <p id="result" style="font-size: 18px;"></p>
+  <div id="result" class="grey">Ready to scan...</div>
 
   <script>
-    const secretKey = "event2025secure";
-    function onScanSuccess(decodedText) {
-      const url = new URL(decodedText);
-      url.searchParams.append("key", secretKey);
-      document.getElementById("result").innerText = "Redirecting to: " + url.toString();
-      window.location.href = url.toString();  // Redirect to the check-in web app
+    const scanner = new Html5Qrcode("reader");
+    const secretKey = "event2025secure"; // must match your Apps Script
+
+    function showMessage(msg, cssClass = "grey") {
+      const result = document.getElementById("result");
+      result.innerText = msg;
+      result.className = cssClass;
     }
 
-    const html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start(
+    function restartScanner() {
+      setTimeout(() => {
+        scanner.start(
+          { facingMode: "environment" },
+          { fps: 10, qrbox: 250 },
+          onScanSuccess
+        );
+        showMessage("Ready to scan...", "grey");
+      }, 4000);
+    }
+
+    function onScanSuccess(scannedUrl) {
+      scanner.stop();
+      showMessage("📸 QR code scanned…", "grey");
+
+      try {
+        const url = new URL(scannedUrl);
+        url.searchParams.append("key", secretKey);
+
+        showMessage("📡 Checking database…", "grey");
+
+        fetch(url.toString())
+          .then(response => response.json())
+          .then(data => {
+            const statusClass = data.status === "success" ? "green"
+                              : data.status === "duplicate" ? "orange"
+                              : "red";
+            showMessage(data.message, statusClass);
+            restartScanner();
+          })
+          .catch(() => {
+            showMessage("❌ Network error. Try again.", "red");
+            restartScanner();
+          });
+
+      } catch (e) {
+        showMessage("❌ Invalid QR code format.", "red");
+        restartScanner();
+      }
+    }
+
+    // Start scanner on load
+    scanner.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: 250 },
       onScanSuccess
-    ).catch(err => {
-      document.getElementById("result").innerText = "Error accessing camera: " + err;
-    });
+    );
   </script>
 </body>
 </html>
