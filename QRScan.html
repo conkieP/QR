@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Staff Check-In QR Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 20px; }
+    #reader { width: 100%; max-width: 400px; margin: auto; }
+  </style>
+</head>
+<body>
+  <h2>Staff Check-In Scanner</h2>
+  <div id="reader"></div>
+  <p id="result" style="font-size: 18px;"></p>
+
+  <script>
+    const secretKey = "event2025secure";
+    function onScanSuccess(decodedText) {
+      const url = new URL(decodedText);
+      url.searchParams.append("key", secretKey);
+      document.getElementById("result").innerText = "Redirecting to: " + url.toString();
+      window.location.href = url.toString();  // Redirect to the check-in web app
+    }
+
+    const html5QrCode = new Html5Qrcode("reader");
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      onScanSuccess
+    ).catch(err => {
+      document.getElementById("result").innerText = "Error accessing camera: " + err;
+    });
+  </script>
+</body>
+</html>
