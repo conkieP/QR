@@ -20,13 +20,6 @@
   </style>
 </head>
 <body>
-
-<audio id="beep-sound" preload="auto" playsinline>
-  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg" type="audio/ogg">
-  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.mp3" type="audio/mpeg">
-  Your browser does not support the audio element.
-</audio>
-
   <h2>Staff Check-In Scanner</h2>
   <div id="reader"></div>
   <div id="result" class="grey">Ready to scan...</div>
@@ -34,13 +27,6 @@
   <script>
     const scanner = new Html5Qrcode("reader");
     const secretKey = "event2025secure"; // must match your Apps Script
-
-  document.addEventListener("click", () => {
-    const beep = document.getElementById("beep-sound");
-    if (beep) {
-      beep.play().catch(() => {}); // play silently to "unlock" it
-    }
-  });
     
     function showMessage(msg, cssClass = "grey") {
       const result = document.getElementById("result");
@@ -61,7 +47,6 @@
 
     function onScanSuccess(scannedUrl) {
       scanner.stop();
-      document.getElementById("beep-sound").play();
       showMessage("📸 QR code scanned…", "grey");
 
       try {
