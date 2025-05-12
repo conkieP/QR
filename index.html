@@ -35,6 +35,13 @@
     const scanner = new Html5Qrcode("reader");
     const secretKey = "event2025secure"; // must match your Apps Script
 
+  document.addEventListener("click", () => {
+    const beep = document.getElementById("beep-sound");
+    if (beep) {
+      beep.play().catch(() => {}); // play silently to "unlock" it
+    }
+  });
+    
     function showMessage(msg, cssClass = "grey") {
       const result = document.getElementById("result");
       result.innerText = msg;
